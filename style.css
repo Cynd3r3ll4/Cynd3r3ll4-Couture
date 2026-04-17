@@ -1,0 +1,23 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --font-color: #db9bc8;
+}
+
+body {
+    background-image: url(WebBackground.svg);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+}
+
+.content {
+    color: var(--font-color);
+    font-family: 'Monaco', sans-serif;
+    text-align: center;
+    padding-top: 15%;
+    font-size: large;
+}
