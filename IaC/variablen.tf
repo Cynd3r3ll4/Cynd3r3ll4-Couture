@@ -33,11 +33,6 @@ variable "s3_sse_algorithm" {
 
 
 // Variablen für cloudfront.tf (und s3.tf)
-variable "cloudfront_distribution_arn" {
-  description = "ARN der CloudFront Distribution für die Bucket-Policy"
-  type        = string
-  default     = "arn:aws:cloudfront::855763870022:distribution/E2ULZ1035XHSSW"
-}
 variable "cloudfront_default_root_object" {
   description = "Standard-Root-Objekt für die CloudFront Distribution"
   type        = string
@@ -106,12 +101,6 @@ variable "oac_description" {
 }
 
 // Variablen für cloudwatch-alarme.tf
-variable "cloudfront_distribution_id" {
-  description = "ID der CloudFront Distribution für die CloudWatch Alarme"
-  type        = string
-  default     = "E2ULZ1035XHSSW"
-}
-
 variable "alarm_threshold_4xx" {
   description = "Schwellenwert für 4xx Fehlerquote in Prozent"
   type        = number
@@ -149,11 +138,6 @@ variable "alarm_name_requests" {
 }
 
 // Variablen für cloudwatch-dashboard.tf
-variable "cloudfront_log_group_name" {
-  description = "Name der CloudWatch Log Group für CloudFront Access Logs"
-  type        = string
-  default     = "CloudFront-Access-Logs"
-}
 variable "cloudwatch_dashboard_name" {
   description = "Name für das CloudWatch Dashboard"
   type        = string

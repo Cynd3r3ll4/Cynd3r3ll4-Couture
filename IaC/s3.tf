@@ -37,7 +37,7 @@ resource "aws_s3_bucket_policy" "website_policy" { // Art der Bucket-Policy-Konf
         Resource = "${aws_s3_bucket.website.arn}/*"           // Ressource, auf die zugegriffen werden kann, nur die Objekte, nicht der Bucket selbst
         Condition = {                                         // Einschränkungsbedingung, um den Zugriff weiter einzuschränken
           StringEquals = {                                    // Bedingungstyp, hier StringEquals, um den Zugriff auf Anfragen von einer bestimmten CloudFront Distribution zu beschränken
-            "AWS:SourceArn" = var.cloudfront_distribution_arn // ARN der CloudFront Distribution
+            "AWS:SourceArn" = "arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_distribution.website.id}" // dynamische ARN der CloudFront Distribution
           }
         }
       }

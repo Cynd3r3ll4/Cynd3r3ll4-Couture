@@ -11,7 +11,7 @@ resource "aws_cloudwatch_metric_alarm" "cf_4xx_alarm" {
   statistic           = "Average"               // Verwendung des Durchschnitts als Statistik, um die durchschnittliche Fehlerquote über den angegebenen Zeitraum zu überwachen
 
   dimensions = { // Definition der Dimensionen für die Metrik, hier mit Bezug zur CloudFront Distribution über die DistributionId und die Region
-    DistributionId = var.cloudfront_distribution_id
+    DistributionId = aws_cloudfront_distribution.website.id
     Region         = "Global"
   }
 
@@ -32,7 +32,7 @@ resource "aws_cloudwatch_metric_alarm" "cf_5xx_alarm" {
   statistic           = "Average"
 
   dimensions = {
-    DistributionId = var.cloudfront_distribution_id
+    DistributionId = aws_cloudfront_distribution.website.id
     Region         = "Global"
   }
 
@@ -53,7 +53,7 @@ resource "aws_cloudwatch_metric_alarm" "cf_requests_alarm" {
   statistic           = "Average"
 
   dimensions = {
-    DistributionId = var.cloudfront_distribution_id
+    DistributionId = aws_cloudfront_distribution.website.id
     Region         = "Global"
   }
 

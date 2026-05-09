@@ -16,7 +16,7 @@ resource "aws_cloudwatch_dashboard" "website_monitoring" {
           "period" : 300,                             // Berechnung der Metrik alle 5 Minuten (300 Sekunden), um eine zeitnahe Überwachung der Fehlerquote zu ermöglichen
           "stat" : "Average",                         // Verwendung des Durchschnitts als Statistik, um die durchschnittliche Fehlerquote über den angegebenen Zeitraum zu überwachen
           "metrics" : [                               // Definition der Metrik, hier die 4xxErrorRate der CloudFront Distribution mit der entsprechenden DistributionId und Region
-            ["AWS/CloudFront", "4xxErrorRate", "Region", "Global", "DistributionId", "${var.cloudfront_distribution_id}", { "region" : var.cloudwatch_metrics_region }]
+            ["AWS/CloudFront", "4xxErrorRate", "Region", "Global", "DistributionId", "${aws_cloudfront_distribution.website.id}", { "region" : var.cloudwatch_metrics_region }]
           ]
         }
       },
@@ -33,7 +33,7 @@ resource "aws_cloudwatch_dashboard" "website_monitoring" {
           "period" : 300,
           "stat" : "Average",
           "metrics" : [
-            ["AWS/CloudFront", "5xxErrorRate", "Region", "Global", "DistributionId", "${var.cloudfront_distribution_id}", { "region" : var.cloudwatch_metrics_region }]
+            ["AWS/CloudFront", "5xxErrorRate", "Region", "Global", "DistributionId", "${aws_cloudfront_distribution.website.id}", { "region" : var.cloudwatch_metrics_region }]
           ]
         }
       },
@@ -50,7 +50,7 @@ resource "aws_cloudwatch_dashboard" "website_monitoring" {
           "period" : 300,
           "stat" : "Average",
           "metrics" : [
-            ["AWS/CloudFront", "TotalErrorRate", "Region", "Global", "DistributionId", "${var.cloudfront_distribution_id}", { "region" : var.cloudwatch_metrics_region }]
+            ["AWS/CloudFront", "TotalErrorRate", "Region", "Global", "DistributionId", "${aws_cloudfront_distribution.website.id}", { "region" : var.cloudwatch_metrics_region }]
           ]
         }
       },
@@ -119,47 +119,8 @@ resource "aws_cloudwatch_dashboard" "website_monitoring" {
           "title" : "Requests",
           "stat" : "Average",
           "metrics" : [
-            ["AWS/CloudFront", "Requests", "Region", "Global", "DistributionId", "${var.cloudfront_distribution_id}", { "region" : var.cloudwatch_metrics_region }]
+            ["AWS/CloudFront", "Requests", "Region", "Global", "DistributionId", "${aws_cloudfront_distribution.website.id}", { "region" : var.cloudwatch_metrics_region }]
           ]
-        }
-      },
-
-      // Top URLs (Log Insights)
-      {
-        "type" : "log", // Widget-Typ: Log, um die Top-URLs der CloudFront Distribution basierend auf den Access Logs zu analysieren
-        "width" : 12,
-        "height" : 6,
-        "properties" : {
-          "region" : var.cloudwatch_dashboard_region,
-          "query" : "fields csUriStem | stats count(*) as hits by csUriStem | sort hits desc | limit 10", // Log Insights Query, um die Top-URLs zu ermitteln, hier werden die csUriStem-Felder gezählt und nach Anzahl der Hits sortiert, um die 10 meistbesuchten URLs anzuzeigen
-          "logGroupNames" : ["${var.cloudfront_log_group_name}"],                                         // Log-Gruppe, aus der die Access Logs der CloudFront Distribution stammen, hier mit Bezug zum Namen der Log-Gruppe
-          "view" : "bar"
-        }
-      },
-
-      // Requests pro Tag (Log Insights)
-      {
-        "type" : "log",
-        "width" : 12,
-        "height" : 6,
-        "properties" : {
-          "region" : var.cloudwatch_dashboard_region,
-          "query" : "stats count(*) as requests by bin(1d)", // Log Insights Query, um die Anzahl der Requests pro Tag zu ermitteln, hier werden die Logs in 1-Tages-Intervalle gruppiert und die Anzahl der Requests gezählt
-          "logGroupNames" : ["${var.cloudfront_log_group_name}"],
-          "view" : "bar"
-        }
-      },
-
-      // Fehleranalyse (Log Insights)
-      {
-        "type" : "log",
-        "width" : 12,
-        "height" : 6,
-        "properties" : {
-          "region" : var.cloudwatch_dashboard_region,
-          "query" : "fields @timestamp, csUriStem, status | filter status >= 400 | sort @timestamp desc | limit 20", // Log Insights Query, um die Fehleranalyse durchzuführen, hier werden die Logs gefiltert, um nur Einträge mit einem Statuscode von 400 oder höher anzuzeigen, sortiert nach Zeitstempel in absteigender Reihenfolge und auf die 20 neuesten Fehler begrenzt
-          "logGroupNames" : ["${var.cloudfront_log_group_name}"],
-          "view" : "table"
         }
       }
     ]
