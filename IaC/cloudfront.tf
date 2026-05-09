@@ -1,26 +1,26 @@
 resource "aws_cloudfront_distribution" "website" {
-  enabled = true // Aktivierung der CloudFront Distribution, damit sie bereitgestellt und genutzt werden kann
-  comment = var.cloudfront_comment // Kommentar zur Distribution
-  is_ipv6_enabled = true // Aktivierung der Unterstützung für IPv6, um die Erreichbarkeit der Verteilung über das neuere Internetprotokoll zu gewährleisten
-  http_version = var.cloudfront_http_version // Unterstützung für HTTP/2 und HTTP/3, um die Leistung und Effizienz der Verteilung zu verbessern
+  enabled             = true                               // Aktivierung der CloudFront Distribution, damit sie bereitgestellt und genutzt werden kann
+  comment             = var.cloudfront_comment             // Kommentar zur Distribution
+  is_ipv6_enabled     = true                               // Aktivierung der Unterstützung für IPv6, um die Erreichbarkeit der Verteilung über das neuere Internetprotokoll zu gewährleisten
+  http_version        = var.cloudfront_http_version        // Unterstützung für HTTP/2 und HTTP/3, um die Leistung und Effizienz der Verteilung zu verbessern
   default_root_object = var.cloudfront_default_root_object // Standard-Root-Objekt, das von der Verteilung bereitgestellt wird
 
-  origin { // Ursprungsdefinition für die CloudFront Distribution
-    domain_name = "${var.bucket_name}.s3.${var.s3_region}.amazonaws.com" // Domain Name meines S3 Buckets, hier mit Bezug zum Bucket Namen und der Region
-    origin_id = "s3_origin" // Interne ID für diesen Ursprung, hier als s3_origin bezeichnet, weil CloudFront-interne ID nicht statisch ist und sich bei jeder Bereitstellung ändert
-    origin_access_control_id = aws_cloudfront_origin_access_control.website_oac.id // Verknüpfung mit der definierten Origin Access Control über die ID der OAC
-    connection_attempts = 3 // Anzahl der Verbindungsversuche, die CloudFront unternimmt, bevor es einen Fehler zurückgibt, hier 3 Versuche
-    connection_timeout = 10 // Zeitlimit in Sekunden für die Herstellung einer Verbindung zum Ursprung, hier 10 Sekunden --> beides intern von CloudFront erstellt
+  origin {                                                                            // Ursprungsdefinition für die CloudFront Distribution
+    domain_name              = "${var.bucket_name}.s3.${var.s3_region}.amazonaws.com" // Domain Name meines S3 Buckets, hier mit Bezug zum Bucket Namen und der Region
+    origin_id                = "s3_origin"                                            // Interne ID für diesen Ursprung, hier als s3_origin bezeichnet, weil CloudFront-interne ID nicht statisch ist und sich bei jeder Bereitstellung ändert
+    origin_access_control_id = aws_cloudfront_origin_access_control.website_oac.id    // Verknüpfung mit der definierten Origin Access Control über die ID der OAC
+    connection_attempts      = 3                                                      // Anzahl der Verbindungsversuche, die CloudFront unternimmt, bevor es einen Fehler zurückgibt, hier 3 Versuche
+    connection_timeout       = 10                                                     // Zeitlimit in Sekunden für die Herstellung einer Verbindung zum Ursprung, hier 10 Sekunden --> beides intern von CloudFront erstellt
   }
 
   default_cache_behavior {
-    target_origin_id = "s3_origin" // Verknüpfung mit dem definierten Ursprung über die origin_id
+    target_origin_id       = "s3_origin"                           // Verknüpfung mit dem definierten Ursprung über die origin_id
     viewer_protocol_policy = var.cloudfront_viewer_protocol_policy // Richtlinie für die Protokollnutzung der Viewer
 
     allowed_methods = var.cloudfront_allowed_methods // Erlaubte HTTP-Methoden für die Verteilung
-    cached_methods = var.cloudfront_cached_methods // HTTP-Methoden, die von CloudFront zwischengespeichert werden
-    cache_policy_id = var.cache_policy_id // ID der Cache-Policy, hier wird die Standard-Cache-Policy von CloudFront verwendet, die eine effiziente Zwischenspeicherung ermöglicht
-    compress = true // Aktivierung der Komprimierung von Inhalten, um die Übertragung zu optimieren
+    cached_methods  = var.cloudfront_cached_methods  // HTTP-Methoden, die von CloudFront zwischengespeichert werden
+    cache_policy_id = var.cache_policy_id            // ID der Cache-Policy, hier wird die Standard-Cache-Policy von CloudFront verwendet, die eine effiziente Zwischenspeicherung ermöglicht
+    compress        = true                           // Aktivierung der Komprimierung von Inhalten, um die Übertragung zu optimieren
   }
 
   price_class = var.cloudfront_price_class // Preisstufe für die CloudFront Distribution
@@ -41,9 +41,9 @@ resource "aws_cloudfront_distribution" "website" {
 }
 
 resource "aws_cloudfront_origin_access_control" "website_oac" { //Art der OAC-Konfiguration: CloudFront Origin Access Control + interner Name: website_oac
-  name = var.oac_name // Name der OAC, hier mit Bezug zum S3 Bucket und der Region
-  description = var.oac_description // Beschreibung der OAC, hier mit Bezug zum S3 Bucket
-  origin_access_control_origin_type = "s3" // Arten der Ursprungsressource, hier S3
-  signing_behavior = "always" // Signierverhalten der Requests, hier immer signieren
-  signing_protocol = "sigv4" // Signierprotokoll, hier AWS Signature Version 4
+  name                              = var.oac_name              // Name der OAC, hier mit Bezug zum S3 Bucket und der Region
+  description                       = var.oac_description       // Beschreibung der OAC, hier mit Bezug zum S3 Bucket
+  origin_access_control_origin_type = "s3"                      // Arten der Ursprungsressource, hier S3
+  signing_behavior                  = "always"                  // Signierverhalten der Requests, hier immer signieren
+  signing_protocol                  = "sigv4"                   // Signierprotokoll, hier AWS Signature Version 4
 }

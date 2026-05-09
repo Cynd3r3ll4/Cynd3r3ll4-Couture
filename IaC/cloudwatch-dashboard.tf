@@ -6,16 +6,16 @@ resource "aws_cloudwatch_dashboard" "website_monitoring" {
 
       // 4xxErrorRate
       {
-        "type" : "metric", // Widget-Typ: Metrik, um die 4xx-Fehlerquote der CloudFront Distribution zu überwachen
-        "width" : 6, // Breite des Widgets, hier 6 von 12 möglichen Einheiten, um es neben anderen Widgets anzuzeigen
-        "height" : 3, // Höhe des Widgets, hier 3 Einheiten, um eine kompakte Darstellung zu ermöglichen
-        "properties" : { // Eigenschaften des Widgets, hier mit Fokus auf die 4xx-Fehlerquote
-          "view" : "singleValue", // Ansichtstyp: Single Value, um die aktuelle Fehlerquote als einzelne Zahl anzuzeigen
-          "stacked" : true, // Aktivierung der Stapelung, um die 4xx-Fehlerquote im Kontext anderer Metriken anzuzeigen, falls vorhanden
+        "type" : "metric",                            // Widget-Typ: Metrik, um die 4xx-Fehlerquote der CloudFront Distribution zu überwachen
+        "width" : 6,                                  // Breite des Widgets, hier 6 von 12 möglichen Einheiten, um es neben anderen Widgets anzuzeigen
+        "height" : 3,                                 // Höhe des Widgets, hier 3 Einheiten, um eine kompakte Darstellung zu ermöglichen
+        "properties" : {                              // Eigenschaften des Widgets, hier mit Fokus auf die 4xx-Fehlerquote
+          "view" : "singleValue",                     // Ansichtstyp: Single Value, um die aktuelle Fehlerquote als einzelne Zahl anzuzeigen
+          "stacked" : true,                           // Aktivierung der Stapelung, um die 4xx-Fehlerquote im Kontext anderer Metriken anzuzeigen, falls vorhanden
           "region" : var.cloudwatch_dashboard_region, // Region der Metrik, hier eu-central-1, um die Daten aus der richtigen Region zu beziehen
-          "period" : 300, // Berechnung der Metrik alle 5 Minuten (300 Sekunden), um eine zeitnahe Überwachung der Fehlerquote zu ermöglichen
-          "stat" : "Average", // Verwendung des Durchschnitts als Statistik, um die durchschnittliche Fehlerquote über den angegebenen Zeitraum zu überwachen
-          "metrics" : [ // Definition der Metrik, hier die 4xxErrorRate der CloudFront Distribution mit der entsprechenden DistributionId und Region
+          "period" : 300,                             // Berechnung der Metrik alle 5 Minuten (300 Sekunden), um eine zeitnahe Überwachung der Fehlerquote zu ermöglichen
+          "stat" : "Average",                         // Verwendung des Durchschnitts als Statistik, um die durchschnittliche Fehlerquote über den angegebenen Zeitraum zu überwachen
+          "metrics" : [                               // Definition der Metrik, hier die 4xxErrorRate der CloudFront Distribution mit der entsprechenden DistributionId und Region
             ["AWS/CloudFront", "4xxErrorRate", "Region", "Global", "DistributionId", "${var.cloudfront_distribution_id}", { "region" : var.cloudwatch_metrics_region }]
           ]
         }
@@ -132,7 +132,7 @@ resource "aws_cloudwatch_dashboard" "website_monitoring" {
         "properties" : {
           "region" : var.cloudwatch_dashboard_region,
           "query" : "fields csUriStem | stats count(*) as hits by csUriStem | sort hits desc | limit 10", // Log Insights Query, um die Top-URLs zu ermitteln, hier werden die csUriStem-Felder gezählt und nach Anzahl der Hits sortiert, um die 10 meistbesuchten URLs anzuzeigen
-          "logGroupNames" : ["${var.cloudfront_log_group_name}"], // Log-Gruppe, aus der die Access Logs der CloudFront Distribution stammen, hier mit Bezug zum Namen der Log-Gruppe
+          "logGroupNames" : ["${var.cloudfront_log_group_name}"],                                         // Log-Gruppe, aus der die Access Logs der CloudFront Distribution stammen, hier mit Bezug zum Namen der Log-Gruppe
           "view" : "bar"
         }
       },
