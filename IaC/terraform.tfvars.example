@@ -20,8 +20,8 @@ terraform_admin_user_arn = "arn:aws:iam::<ACCOUNT-ID>:user/AdminUser"
 github_oidc_provider_arn = "arn:aws:iam::<ACCOUNT-ID>:oidc-provider/token.actions.githubusercontent.com"
 
 
-# OPTIONALE VARIABELN
-// Die nachfolgenden Variabeln können geändert werden, um eine vollständige Personalisierung zu erreichen.
+# OPTIONALE VARIABLEN
+// Die nachfolgenden Variablen können geändert werden, um eine vollständige Personalisierung zu erreichen.
 // AWS Regionen anpassen
 aws_region = "eu-central-1" // Hauptregion
 aws_secondary_region = "us-east-1" // sekundäre Region
