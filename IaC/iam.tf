@@ -16,7 +16,7 @@ resource "aws_iam_role" "terraform_role" { //erstellen einer IAM-Rolle für Terr
 }
 
 resource "aws_iam_role_policy_attachment" "terraform_poweruser" { // Anfügen der PowerUserAccess-Policy an die zuvor erstellte IAM-Rolle, um der Rolle die notwendigen Berechtigungen für die Verwaltung der AWS-Ressourcen zu gewähren
-  role       = aws_iam_role.terraform_role.name
+  role = aws_iam_role.terraform_role.name
   policy_arn = var.policy_poweruser_arn
 }
 
@@ -46,14 +46,14 @@ resource "aws_iam_role" "github_role" { // Erstellen einer IAM-Rolle für GitHub
 }
 
 resource "aws_iam_policy" "github_cf_invalidation" { // Erstellen einer benutzerdefinierten IAM-Policy für die Invalidation von CloudFront-Distributionen, um GitHub Actions die Berechtigung zu geben, die CloudFront Distribution zu invalidieren, wenn neue Inhalte bereitgestellt werden
-  name        = "GitHubActionsCloudFrontInvalidation"
+  name = "GitHubActionsCloudFrontInvalidation"
   description = "Erlaubt GitHub Actions das Invalidieren der CloudFront Distribution"
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "VisualEditor0"
+        Sid = "VisualEditor0"
         Effect = "Allow"
         Action = [
           "cloudfront:CreateInvalidation" // Berechtigung zum Erstellen von Invalidierungen in der CloudFront Distribution, um sicherzustellen, dass die neuesten Inhalte nach der Bereitstellung in S3 sofort verfügbar sind
@@ -65,14 +65,14 @@ resource "aws_iam_policy" "github_cf_invalidation" { // Erstellen einer benutzer
 }
 
 resource "aws_iam_policy" "github_s3_deploy" { // Erstellen einer benutzerdefinierten IAM-Policy für die Bereitstellung in S3, um GitHub Actions die Berechtigung zu geben, Inhalte in den S3 Bucket hochzuladen und zu löschen, wenn neue Inhalte bereitgestellt werden
-  name        = "GitHubActionsS3Deploy"
+  name = "GitHubActionsS3Deploy"
   description = "Erlaubt GitHub Actions das Deployen in den S3 Bucket"
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "VisualEditor0"
+        Sid = "VisualEditor0"
         Effect = "Allow"
         Action = [ // Berechtigungen für die Aktionen, die zum Hochladen, Löschen und Auflisten von Objekten im S3 Bucket erforderlich sind, um die Bereitstellung von Inhalten zu ermöglichen
           "s3:PutObject",
@@ -90,12 +90,12 @@ resource "aws_iam_policy" "github_s3_deploy" { // Erstellen einer benutzerdefini
 
 // Anfügen der GitHubActionsS3Deploy-Policy an die GitHubRolle, um den GitHub Actions die Berechtigungen für die Bereitstellung in S3 zu gewähren
 resource "aws_iam_role_policy_attachment" "github_s3_deploy_attach" {
-  role       = aws_iam_role.github_role.name
+  role = aws_iam_role.github_role.name
   policy_arn = aws_iam_policy.github_s3_deploy.arn
 }
 
 // Anfügen der GitHubActionsCloudFrontInvalidation-Policy an die GitHubRolle, um den GitHub Actions die Berechtigungen für die Invalidation der CloudFront Distribution zu gewähren
 resource "aws_iam_role_policy_attachment" "github_cf_invalidation_attach" {
-  role       = aws_iam_role.github_role.name
+  role = aws_iam_role.github_role.name
   policy_arn = aws_iam_policy.github_cf_invalidation.arn
 }
