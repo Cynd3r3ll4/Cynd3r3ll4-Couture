@@ -1,0 +1,63 @@
+
+/# Dies ist eine ".tfvars-Datei"-Vorlage.
+// Zu diesem Zweck muss diese datei kopiert und als ".tfvars" (ohne .example) abgespeichert werden.
+// In dieser müssen die untenstehenden Variablen angepasst werden, damit sie bei der Ausführung des Codes automatisch verwendet werden können.
+// In der .gitignore-Datei ist diese kopierte .tfvars-Datei aufgeführt, damit diese nicht versehentlich committet wird.
+
+
+# PFLICHTVARIABELN
+// Die nachfolgenden Variablen müssen geändert und an den eigenen AWS-Account angepasst werden, damit diese IaC ausgeführt werden kann.
+// eigenen, weltweit eindeutigen Bucket-namen definieren
+bucket_name = "mein-eigener-bucketname"
+
+// das eigene GitHub-Repo einfügen, wenn der Deploy darüber erfolgen soll (statt manuell Objeket in den Bucket zu ziehen, Format: "GitHubUser/RepositoryName")
+github_repo = "Username/CloudProgramming"
+
+// die eigene Admin-User-ARN einfügen
+terraform_admin_user_arn = "arn:aws:iam::<ACCOUNT-ID>:user/AdminUser"
+
+// die eigene OIDC-Provider-ARN einfügen (nach erstellung im AWS-Account)
+github_oidc_provider_arn = "arn:aws:iam::<ACCOUNT-ID>:oidc-provider/token.actions.githubusercontent.com"
+
+
+# OPTIONALE VARIABELN
+// Die nachfolgenden Variabeln können geändert werden, um eine vollständige Personalisierung zu erreichen.
+// AWS Regionen anpassen
+aws_region = "eu-central-1" // Hauptregion
+aws_secondary_region = "us-east-1" // sekundäre Region
+s3_region = "eu-central-1" // S3-Origin-Region
+cloudwatch_dashboard_region = "eu-central-1"
+cloudwatch_metrics_region = "us-east-1"
+
+// CloudFront Identifikation
+cloudfront_comment = "Cynd3r3ll4 Couture Distribution"
+cloudfront_tag_name = "Cynd3r3ll4 Couture"
+
+// S3 Konfigurationsoptionen
+s3_sse_algorithm = "AES256" // S3 Verschlüsselung
+
+// CloudWatch Alarm Schwellenwerte
+alarm_threshold_4xx = 5 // in Prozent
+alarm_threshold_5xx = 1 // in Prozent
+alarm_threshold_requests = 1000 // in 5 Minuten
+
+// CloudFront Konfigurationsoptionen
+cloudfront_price_class = "PriceClass_All" // Auswahl: "PriceClass_100", "PriceClass_200", "PriceClass_All"
+cloudfront_default_root_object = "index.html"
+cloudfront_http_version = "http2and3"
+cloudfront_viewer_protocol_policy = "redirect-to-https"
+cloudfront_allowed_methods = ["GET", "HEAD"]
+cloudfront_cached_methods = ["GET", "HEAD"]
+cache_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6"
+
+// Namen der IAM-Rollen und OAC-Benennung
+terraform_role_name = "TerraformRolle"
+github_role_name = "GitHubRolle"
+oac_name = "oac-cpc"
+oac_description = "OAC for S3 origin"
+
+// Alarm und Dashboard Namen
+alarm_name_4xx = "4xx-CloudWatch-Alarm"
+alarm_name_5xx = "5xx-CloudWatch-Alarm"
+alarm_name_requests = "Requests-CloudWatch-Alarm"
+cloudwatch_dashboard_name = "Website-Monitoring-Dashboard"
