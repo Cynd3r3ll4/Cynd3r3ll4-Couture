@@ -33,10 +33,10 @@ resource "aws_s3_bucket_policy" "website_policy" { // Art der Bucket-Policy-Konf
         Principal = {                          // Definition des Principlas (der Entität, die Zugriff erhält)
           Service = "cloudfront.amazonaws.com" // Service, der Zugriff erhält, hier CloudFront, um den Zugriff von CloudFront zu erlauben
         }
-        Action   = "s3:GetObject"                             // Erlaubte Aktion, hier GetObject, nur lesender Zugriff, keine Schreib- oder Löschrechte
-        Resource = "${aws_s3_bucket.website.arn}/*"           // Ressource, auf die zugegriffen werden kann, nur die Objekte, nicht der Bucket selbst
-        Condition = {                                         // Einschränkungsbedingung, um den Zugriff weiter einzuschränken
-          StringEquals = {                                    // Bedingungstyp, hier StringEquals, um den Zugriff auf Anfragen von einer bestimmten CloudFront Distribution zu beschränken
+        Action   = "s3:GetObject"                                                                                                                         // Erlaubte Aktion, hier GetObject, nur lesender Zugriff, keine Schreib- oder Löschrechte
+        Resource = "${aws_s3_bucket.website.arn}/*"                                                                                                       // Ressource, auf die zugegriffen werden kann, nur die Objekte, nicht der Bucket selbst
+        Condition = {                                                                                                                                     // Einschränkungsbedingung, um den Zugriff weiter einzuschränken
+          StringEquals = {                                                                                                                                // Bedingungstyp, hier StringEquals, um den Zugriff auf Anfragen von einer bestimmten CloudFront Distribution zu beschränken
             "AWS:SourceArn" = "arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_distribution.website.id}" // dynamische ARN der CloudFront Distribution
           }
         }

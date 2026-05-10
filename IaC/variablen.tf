@@ -194,16 +194,3 @@ variable "github_repo" {
   type        = string
   default     = "Cynd3r3ll4/Cloud-Programming-Code"
 }
-
-// IAM Policies
-variable "policy_github_s3_deploy" {
-  description = "ARN der GitHubActionsS3Deploy Policy"
-  type        = string
-  default     = "arn:aws:iam::855763870022:policy/GitHubActionsS3Deploy"
-}
-
-variable "policy_github_cf_invalidation" {
-  description = "ARN der GitHubActionsCloudFrontInvalidation Policy"
-  type        = string
-  default     = "arn:aws:iam::855763870022:policy/GitHubActionsCloudFrontInvalidation"
-}

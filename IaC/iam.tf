@@ -44,22 +44,58 @@ resource "aws_iam_role" "github_role" { // Erstellen einer IAM-Rolle für GitHub
     ]
   })
 }
-// bestehende Policies für die GitHub Actions, hier mit Bezug auf die Berechtigungen für die Bereitstellung in S3 und die Invalidation von CloudFront-Distributionen, werden über Data Sources abgerufen und an die GitHubRolle angehängt, um den GitHub Actions die notwendigen Berechtigungen zu gewähren
-data "aws_iam_policy" "github_s3_deploy" {
-  arn = var.policy_github_s3_deploy
+
+resource "aws_iam_policy" "github_cf_invalidation" { // Erstellen einer benutzerdefinierten IAM-Policy für die Invalidation von CloudFront-Distributionen, um GitHub Actions die Berechtigung zu geben, die CloudFront Distribution zu invalidieren, wenn neue Inhalte bereitgestellt werden
+  name        = "GitHubActionsCloudFrontInvalidation"
+  description = "Erlaubt GitHub Actions das Invalidieren der CloudFront Distribution"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "VisualEditor0"
+        Effect = "Allow"
+        Action = [
+          "cloudfront:CreateInvalidation" // Berechtigung zum Erstellen von Invalidierungen in der CloudFront Distribution, um sicherzustellen, dass die neuesten Inhalte nach der Bereitstellung in S3 sofort verfügbar sind
+        ]
+        Resource = "arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_distribution.website.id}" // Nutzung von Variablen für die Account ID und die CloudFront Distribution ID, um die Berechtigungen auf die spezifische CloudFront Distribution zu beschränken, die von diesem Projekt verwendet wird, um die Sicherheit zu gewährleisten
+      }
+    ]
+  })
 }
 
-data "aws_iam_policy" "github_cf_invalidation" {
-  arn = var.policy_github_cf_invalidation
+resource "aws_iam_policy" "github_s3_deploy" { // Erstellen einer benutzerdefinierten IAM-Policy für die Bereitstellung in S3, um GitHub Actions die Berechtigung zu geben, Inhalte in den S3 Bucket hochzuladen und zu löschen, wenn neue Inhalte bereitgestellt werden
+  name        = "GitHubActionsS3Deploy"
+  description = "Erlaubt GitHub Actions das Deployen in den S3 Bucket"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "VisualEditor0"
+        Effect = "Allow"
+        Action = [ // Berechtigungen für die Aktionen, die zum Hochladen, Löschen und Auflisten von Objekten im S3 Bucket erforderlich sind, um die Bereitstellung von Inhalten zu ermöglichen
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          "${aws_s3_bucket.website.arn}",
+          "${aws_s3_bucket.website.arn}/*"
+        ]
+      }
+    ]
+  })
 }
 
 // Anfügen der GitHubActionsS3Deploy-Policy an die GitHubRolle, um den GitHub Actions die Berechtigungen für die Bereitstellung in S3 zu gewähren
 resource "aws_iam_role_policy_attachment" "github_s3_deploy_attach" {
   role       = aws_iam_role.github_role.name
-  policy_arn = data.aws_iam_policy.github_s3_deploy.arn
+  policy_arn = aws_iam_policy.github_s3_deploy.arn
 }
 
+// Anfügen der GitHubActionsCloudFrontInvalidation-Policy an die GitHubRolle, um den GitHub Actions die Berechtigungen für die Invalidation der CloudFront Distribution zu gewähren
 resource "aws_iam_role_policy_attachment" "github_cf_invalidation_attach" {
   role       = aws_iam_role.github_role.name
-  policy_arn = data.aws_iam_policy.github_cf_invalidation.arn
+  policy_arn = aws_iam_policy.github_cf_invalidation.arn
 }
