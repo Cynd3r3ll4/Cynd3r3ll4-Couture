@@ -56,37 +56,8 @@ Dieses Terraform-Projekt stellt eine hoch verfügbare, global erreichbare, autom
 
 ## Architektur
 
-```
-![Cloud-Architekturdiagramm](CloudDiagramm.png)
-┌─────────────────────────────────────────────────────────────────┐
-│                        End-User (Internet)                      │
-└────────────────┬────────────────────────────────────────────────┘
-                 │
-                 ▼
-         ┌──────────────────┐
-         │   CloudFront CDN │ (HTTPS, OAC)
-         │  (Global Edge)   │
-         └────────┬─────────┘
-                  │
-                  ▼
-         ┌──────────────────┐
-         │     S3 Bucket    │ (Private)
-         │  (Origin)        │
-         └────────┬─────────┘
-                  │
-     ┌────────────┴────────────┐
-     ▼                         ▼
-┌─────────────┐         ┌──────────────────┐
-│  CloudWatch │         │   SNS Topics     │
-│  Alarme     │◄───────►│ Notifications    │
-└─────────────┘         └──────────────────┘
-     │
-     ▼
-┌──────────────────┐
-│ CloudWatch Dash  │
-│ (Monitoring)     │
-└──────────────────┘
-```
+![Cloud-Architekturdiagramm](CloudDiagramm.svg)
+
 
 ### Deployment-Flow
 
@@ -122,13 +93,15 @@ Dieses Terraform-Projekt stellt eine hoch verfügbare, global erreichbare, autom
 
 ### Für GitHub Actions (automatisiertes Deployment)
 
-1. **GitHub OIDC Provider** in deinem AWS Account registriert
+1. **GitHub OIDC Provider** im eigenen AWS Account registriert
 2. **GitHub Secrets** konfiguriert (siehe [Automatisierte Deployments](#automatisierte-deployments-github-actions))
 
 ### AWS Account
 
-- IAM-Benutzer mit entsprechenden Berechtigungen
-- (Oder: IAM-Rolle `TerraformRolle` aus diesem Projekt verwenden)
+- IAM-Benutzer mit Admin-Rechten (z.B. AWS-verwaltete "AdministratorAccess"-Berechtigungen)
+> Terraform erstellt anschließend automatisch:
+ - TerraformRolle (für zukünftige Terraform‑Runs)
+ - GitHubRolle (für GitHub Actions Deployments) 
 
 ---
 
@@ -147,17 +120,17 @@ cd CloudProgrammingCode/IaC
 # Vorlage kopieren
 cp terraform.tfvars.example terraform.tfvars
 
-# Mit deinem Lieblingseditor bearbeiten
+# im Terminal-Editor bearbeiten
 nano terraform.tfvars
-# ODER
+# ODER in VS Code
 code terraform.tfvars
 ```
 
-**Kritische Variablen, die du ändern MUSST:**
-- `bucket_name`: Eindeutiger S3-Bucket-Name (global!)
-- `terraform_admin_user_arn`: Deine Admin-User-ARN
-- `github_repo`: Dein GitHub-Repository (owner/repo)
-- `github_oidc_provider_arn`: ARN deines GitHub OIDC Providers
+**Kritische Variablen, die geändert werden MÜSSEN:**
+- `bucket_name`: Eindeutiger S3-Bucket-Name (weltweit eindeutig!)
+- `terraform_admin_user_arn`: eigene Admin-User-ARN
+- `github_repo`: eigenes GitHub-Repository (owner/repo)
+- `github_oidc_provider_arn`: ARN des eigenen GitHub OIDC Providers
 
 ### 3. Terraform initialisieren
 
@@ -168,15 +141,15 @@ terraform init
 ### 4. Plan überprüfen
 
 ```bash
-terraform plan -out=tfplan
+terraform plan -out=tfplan # um den Plan genau so zu speichern
 ```
 
-Überprüfe die geplanten Änderungen sorgfältig.
+Überprüfen sie die geplanten Änderungen sorgfältig.
 
 ### 5. Infrastruktur bereitstellen
 
 ```bash
-terraform apply tfplan
+terraform apply tfplan # um den gespeicherten Plan umzusetzen
 ```
 
 ### 6. Outputs anzeigen
@@ -185,7 +158,7 @@ terraform apply tfplan
 terraform output
 ```
 
-Die CloudFront-URL unter `cloudfront_domain_name` ist deine Website-URL.
+Die CloudFront-URL unter `cloudfront_domain_name` ist die Website-URL.
 
 ---
 
