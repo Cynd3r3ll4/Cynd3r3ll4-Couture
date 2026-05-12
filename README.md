@@ -155,14 +155,22 @@ terraform apply tfplan # um den gespeicherten Plan umzusetzen
 ### 6. Outputs anzeigen
 
 ```bash
-terraform output
+terraform output # um die in outputs.tf gespeicherten Werte anzuzeigen
 ```
 
 Die CloudFront-URL unter `cloudfront_domain_name` ist die Website-URL.
-
+Die Outputs der IaC sind:
+- Name & ARN des S3-Buckets
+- CloudFront Distribution ID & ARN
+- CloudFront Domain Name (CloudFront-URL = Website-URL)
+- CloudFront Origin Access Control- (OAC) ID & ARN
+- ARNs der Terraform- & GitHub-Rolle
+- SNS-Topic ARNs (3)
+- CloudWatch-Alarm-ARNs (3)
+- CloudWatch-Dashboard Name
 ---
 
-## 🔧 Detaillierter Setup
+## 🔧 Detailliertes Setup
 
 ### Schritt 1: Repository vorbereiten
 
@@ -176,35 +184,35 @@ cd CloudProgrammingCode/IaC
 #### Option A: Mit existierendem Admin-User
 
 ```bash
-# 1. Deine AWS Account ID ermitteln
+# 1. eigene AWS Account ID ermitteln
 aws sts get-caller-identity
 
-# 2. Deinen Admin-User ARN ermitteln
+# 2. eigene Admin-User ARN ermitteln
 aws iam get-user --user-name AdminUser
-# Kopiere die "Arn" aus dem Output
+# "Arn" aus dem Output kopieren
 ```
 
 #### Option B: Neue IAM-Rolle via Terraform
 
-Falls du die `TerraformRolle` aus diesem Projekt verwenden möchtest:
+Falls die `TerraformRolle` aus diesem Projekt verwendet werden soll:
 - Sie wird automatisch erstellt
-- Dein Admin-User kann sie annehmen (via `aws sts assume-role`)
+- Der eigene Admin-User kann sie annehmen (via `aws sts assume-role`)
 
-### Schritt 3: GitHub OIDC Provider einrichten (falls GitHub Actions nutzen)
+### Schritt 3: GitHub OIDC Provider manuell einrichten (falls GitHub Actions genutzt werden soll)
 
 ```bash
-# Erstelle den OIDC Provider (einmalig pro AWS Account)
+# Erstellen des OIDC Provider (einmalig pro AWS Account)
 aws iam create-open-id-connect-provider \
   --url https://token.actions.githubusercontent.com \
   --client-id-list sts.amazonaws.com \
   --thumbprint-list <THUMBPRINT>
 
-# Den Thumbprint findest du unter:
+# Thumbprint:
 # https://github.blog/changelog/2022-01-13-github-actions-update-on-oidc-based-deployments-for-aws/
 # Standardwert: 6938fd4d98bab03faadb97b34396831e3780aea1
 ```
 
-Oder nutze die Terraform-Vorlage aus `iam.tf` für automatisierte Einrichtung.
+> Alternativ kann die Terraform-Vorlage aus `iam.tf` für automatisierte Einrichtung verwendet werden.
 
 ### Schritt 4: Variables anpassen
 
@@ -224,6 +232,7 @@ github_oidc_provider_arn = "arn:aws:iam::123456789012:oidc-provider/token.action
 # OPTIONAL - nur wenn du andere Werte möchtest
 aws_region = "eu-central-1"
 cloudfront_price_class = "PriceClass_100"  # Günstiger, aber weniger Regionen
+# ...und weitere
 ```
 
 ### Schritt 5: Terraform initialisieren
@@ -242,23 +251,23 @@ Terraform has been successfully configured!
 ### Schritt 6: Plan & Review
 
 ```bash
-terraform plan -out=tfplan
+terraform plan -out=tfplan # um den Plan genau so zu speichern
 ```
 
-Überprüfe alle geplanten Ressourcen. Output zeigt:
+Alle geplanten Ressourcen überprüfen. Output zeigt:
 - S3 Bucket
 - CloudFront Distribution
 - IAM Rollen & Policies
 - CloudWatch Alarme & SNS Topics
-- etc.
+- etc. [(siehe Schritt 6. Outputs anzeigen)](#6-Outputs-anzeigen)
 
 ### Schritt 7: Anwenden
 
 ```bash
-terraform apply tfplan
+terraform apply tfplan # um den gespeicherten Plan umzusetzen
 ```
 
-** Erwartet ~5-10 Minuten für CloudFront Distribution**
+** Erwartet: ~5-10 Minuten für CloudFront Distribution**
 
 ---
 
@@ -266,13 +275,13 @@ terraform apply tfplan
 
 ### Website-Dateien uploaden
 
-Nachdem die Infrastruktur bereitgestellt ist, lade deine Website-Dateien hoch:
+Nachdem die Infrastruktur bereitgestellt ist, könenn die Website-Dateien hochgeladen werden:
 
 #### Option 1: Manuell via AWS Console
 
-1. Öffne S3 Console
-2. Gehe zu deinem Bucket (Name aus Outputs)
-3. Lade `index.html` und andere Dateien hoch
+1. S3 Console öffnen
+2. Zum Bucket navigieren (Name aus Outputs)
+3. bspw. `index.html` und andere Dateien hochladen
 
 #### Option 2: Via AWS CLI
 
@@ -313,7 +322,7 @@ Dieses Projekt unterstützt vollautomatisierte Website-Deployments via GitHub Ac
 1. **OIDC Provider eingerichtet** (siehe [Schritt 3](#schritt-3-github-oidc-provider-einrichten-falls-github-actions-nutzen))
 2. **GitHub Secrets konfiguriert**:
    - `AWS_ROLE_ARN`: ARN der GitHub Actions Role (aus Terraform Outputs)
-   - `AWS_REGION`: z.B. `eu-central-1`
+   - `CLOUDFRONT-DISTRIBUTION-ID`: ID der CloudFront-Distribution
 
 ### GitHub Secrets einrichten
 
@@ -334,7 +343,7 @@ Oder manuell in GitHub:
 2. "New repository secret" hinzufügen:
    - Name: `AWS_ROLE_ARN`
    - Value: `arn:aws:iam::123456789012:role/GitHubRolle`
-3. Wiederholen für `AWS_REGION`
+3. Wiederholen für `CLOUDFRONT-DISTRIBUTION-ID`
 
 ### Workflow-Beispiel (.github/workflows/deploy.yml)
 
@@ -344,8 +353,6 @@ name: Deploy Website
 on:
   push:
     branches: [main]
-    paths:
-      - 'Webseite/**'
 
 permissions:
   id-token: write
@@ -355,29 +362,27 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLLE }}
+          aws-region: eu-central-1
 
-      - name: Upload to S3
+      - name: Sync to S3
         run: |
-          S3_BUCKET=$(cd IaC && terraform output -raw s3_bucket_name)
-          aws s3 sync ./Webseite/ s3://$S3_BUCKET/ --delete
+          aws s3 sync Webseite/ s3://cloud-programming-bucket-cynd3r3ll4 --delete
 
-      - name: Invalidate CloudFront
+      - name: Invalidate CloudFront cache
         run: |
-          cd IaC
-          DIST_ID=$(terraform output -raw cloudfront_distribution_id)
           aws cloudfront create-invalidation \
-            --distribution-id $DIST_ID \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
             --paths "/*"
 ```
 
-**Ergebnis**: Bei jedem Push zu `main` wird die Website automatisch deployed! ✨
+**Ergebnis**: Bei jedem Push zu `main` wird die Website automatisch deployed.
 
 ---
 
@@ -389,7 +394,7 @@ Das Projekt erstellt automatisch ein Dashboard mit:
 - **4xx Error Rate**: Client-Fehler (z.B. 404 Not Found)
 - **5xx Error Rate**: Server-Fehler
 - **Requests**: Gesamtanzahl Anfragen
-- **Cache Statistics**: Hit/Miss Rate
+- **Alarme**: erfolgreiche Zustellung der Alarme
 
 Dashboard aufrufen:
 ```bash
@@ -403,11 +408,11 @@ terraform output cloudwatch_dashboard_name
 
 Folgende Alarme sind automatisch konfiguriert:
 
-| Alarm | Schwellenwert | Aktion |
-|-------|---------------|--------|
-| 4xx Fehlerquote | > 5% | SNS Email |
-| 5xx Fehlerquote | > 1% | SNS Email |
-| Requests | > 1000/5min | SNS Email |
+|      Alarm      | Schwellenwert |  Aktion   |
+|-----------------|---------------|-----------|
+| 4xx Fehlerquote |          > 5% | SNS Email |
+| 5xx Fehlerquote |          > 1% | SNS Email |
+| Requests        |   > 1000/5min | SNS Email |
 
 **E-Mail-Benachrichtigungen einrichten**:
 
@@ -418,8 +423,8 @@ terraform output sns_topic_4xx_arn
 # Abonnement erstellen (einmalig in AWS Console)
 # SNS → Topics → [Topic-Name] → Create subscription
 # - Protocol: Email
-# - Endpoint: deine@email.de
-# - Confirm subscription link in email
+# - Endpoint: ihre@email.de
+# - Bestätigung des subscription link in Email
 ```
 
 ### Schwellenwerte anpassen
@@ -502,14 +507,14 @@ terraform output
 
 Wichtige Outputs:
 
-| Output | Beschreibung | Beispiel |
-|--------|-------------|---------|
-| `s3_bucket_name` | S3 Bucket Name | `my-bucket` |
-| `cloudfront_domain_name` | **Deine Website-URL** | `d123.cloudfront.net` |
-| `cloudfront_distribution_id` | Distribution ID | `E123ABC` |
-| `terraform_role_arn` | ARN der Terraform-Rolle | `arn:aws:iam::123...` |
-| `github_role_arn` | ARN der GitHub Actions-Rolle | `arn:aws:iam::123...` |
-| `sns_topic_4xx_arn` | SNS Topic für 4xx Alarme | `arn:aws:sns::...` |
+|            Output            |         Beschreibung         |       Beispiel        |
+|------------------------------|------------------------------|-----------------------|
+| `s3_bucket_name`             | S3 Bucket Name               | `my-bucket`           |
+| `cloudfront_domain_name`     | **Deine Website-URL**        | `d123.cloudfront.net` |
+| `cloudfront_distribution_id` | Distribution ID              | `E123ABC`             |
+| `terraform_role_arn`         | ARN der Terraform-Rolle      | `arn:aws:iam::123...` |
+| `github_role_arn`            | ARN der GitHub Actions-Rolle | `arn:aws:iam::123...` |
+| `sns_topic_4xx_arn`          | SNS Topic für 4xx Alarme     | `arn:aws:sns::...`    |
 
 **Website testen**:
 
@@ -577,7 +582,7 @@ Error: Error creating IAM role: InvalidInput
 **Lösung**: Korrekte ARN überprüfen:
 ```bash
 aws iam get-user --user-name AdminUser
-# Kopiere die "Arn" aus dem Output
+# "Arn" aus dem Output kopieren
 ```
 
 ### Problem: Terraform kann keine AWS-Credentials finden
@@ -599,7 +604,7 @@ export AWS_DEFAULT_REGION="eu-central-1"
 
 ### Problem: CloudFront Distribution braucht lange
 
-CloudFront kann 5-10 Minuten zum Bereitstellen brauchen. Das ist normal. Mit `aws cloudfront wait` kannst du warten:
+CloudFront kann 5-10 Minuten zum Bereitstellen brauchen. Das ist normal. Mit `aws cloudfront wait` kannst gewartet werden, bis CloudFront fertig deployed ist:
 
 ```bash
 DIST_ID=$(terraform output -raw cloudfront_distribution_id)
@@ -656,22 +661,22 @@ Error: Unable to assume role
 
 ### 1. State-File Management
 
-**Lokal (für Development)**:
+**Lokal speichern (für Development)**:
 ```bash
-# State-File in .gitignore (ist bereits dort)
+# State-File in .gitignore (ist bereits dort), da sie aufgrund sensibler Daten niemals ins GitHub-Repo darf
 # ✓ Funktioniert für einzelne Entwickler
 ```
 
-**Remote (für Team)**:
+**Remote speichern (für Team)**:
 ```bash
 # Backends.tf erstellen
 terraform {
-  backend "s3" {
+  backend "s3" { # State wird in einem weiteren S3-Bucket gespeichert
     bucket         = "terraform-state-bucket"
     key            = "prod/terraform.tfstate"
     region         = "eu-central-1"
     encrypt        = true
-    dynamodb_table = "terraform-locks"
+    dynamodb_table = "terraform-locks" # schütz vor gleichzeitiger Befehlausführung durch mehrere Personen
   }
 }
 
@@ -682,7 +687,7 @@ terraform {
 
 - **`terraform.tfvars.example`**: In Git committen (Vorlage)
 - **`terraform.tfvars`**: Niemals committen (`.gitignore`)
-- **Sensitive Daten**: Nicht in `terraform.tfvars` – nutze AWS Secrets Manager oder Parameter Store
+- **Sensitive Daten**: Nicht in `terraform.tfvars` –  AWS Secrets Manager oder Parameter Store benutzen
 
 ### 3. Sicherheit
 
@@ -694,8 +699,6 @@ terraform {
 
 **Zu beachten**:
 - `terraform_admin_user_arn` auf Least Privilege prüfen
-- SNS Topics verschlüsseln (optional: `kms_master_key_id`)
-- CloudFront WAF hinzufügen (optional: `web_acl_id`)
 
 ### 4. CI/CD Pipeline
 
@@ -710,37 +713,13 @@ Code Push → GitHub Actions → Terraform Plan (Review) → Terraform Apply
 4. `terraform plan` (Review vor Apply)
 5. `terraform apply` (nur auf main/prod)
 
-### 5. Monitoring & Logging
 
-- CloudWatch Logs aktivieren (optional: `log_config` in CloudFront)
-- Access Logs in S3 aktivieren (optional: `logging` in S3)
-- AWS CloudTrail für Audit Logs
+### 5. Dokumentation
 
-### 6. Tagging-Strategie
-
-```hcl
-locals {
-  common_tags = {
-    Project     = "Cloud-Programming"
-    Environment = "production"
-    ManagedBy   = "Terraform"
-    CreatedAt   = "2024-01-01"
-  }
-}
-
-resource "aws_s3_bucket" "website" {
-  tags = merge(local.common_tags, {
-    Name = "Website Bucket"
-  })
-}
-```
-
-### 7. Dokumentation
-
-- Halte dieses README aktuell
-- Dokumentiere Custom-Variablen in `variablen.tf`
-- Nutze Terraform `description` Felder
-- Kommentiere komplexe Ressourcen
+- dieses README aktuell halten
+- Custom-Variablen in `variablen.tf` dokumentieren
+- Terraform `description` Felder nutzen
+- komplexe Ressourcen kommentieren
 
 ---
 
@@ -756,14 +735,14 @@ resource "aws_s3_bucket" "website" {
 ## Support & Fragen
 
 Bei Problemen:
-1. Überprüfe [Troubleshooting](#troubleshooting)
-2. Schau in Terraform Logs: `TF_LOG=DEBUG terraform apply`
-3. Überprüfe AWS CloudTrail für API-Fehler
-4. Nutze `terraform state show` um State zu debuggen
+1. [Troubleshooting](#troubleshooting) überprüfen
+2. Blick in Terraform Logs: `TF_LOG=DEBUG terraform apply`
+3. AWS CloudTrail für API-Fehler überprüfen
+4. `terraform state show` nutzen, um State zu debuggen
 
 ---
 
 **Version**: 1.0  
-**Zuletzt aktualisiert**: Mai 2024  
+**Zuletzt aktualisiert**: 12. Mai 2026  
 **Terraform Version**: ≥ 1.0  
 **AWS Provider**: ~> 5.0
