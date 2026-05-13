@@ -726,7 +726,7 @@ Code Push → GitHub Actions → Terraform Plan (Review) → Terraform Apply
 ## Weitere Ressourcen
 
 - [Terraform AWS Provider Docs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
-- [AWS CloudFront Best Practices](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/BestPractices.html)
+- [AWS CloudFront Best Practices](https://docs.aws.amazon.com/search/doc-search.html?searchPath=documentation&searchQuery=best%20practices)
 - [GitHub Actions & AWS OIDC](https://github.com/aws-actions/configure-aws-credentials)
 - [Terraform State Management](https://developer.hashicorp.com/terraform/language/state)
 
