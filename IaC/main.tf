@@ -11,6 +11,4 @@
   - sns.tf                  → SNS Topics
   - variables.tf            → Eingabevariablen
   - outputs.tf              → Ausgaben
-
-  Die main.tf dient nur als Einstiegspunkt und enthält keine Ressourcen.
 */

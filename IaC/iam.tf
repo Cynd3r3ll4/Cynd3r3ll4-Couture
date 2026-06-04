@@ -1,7 +1,7 @@
 resource "aws_iam_role" "terraform_role" { //erstellen einer IAM-Rolle für Terraform, um die notwendigen Berechtigungen für die Verwaltung der AWS-Ressourcen zu erhalten
   name = var.terraform_role_name
 
-  assume_role_policy = jsonencode({ // Definition der Vertrauensrichtlinie für die IAM-Rolle, hier mit Bezug auf den IAM-Benutzer "AdminHeMaNe", der die Rolle annehmen darf, um die AWS-Ressourcen zu verwalten
+  assume_role_policy = jsonencode({ // Definition der Vertrauensrichtlinie für die IAM-Rolle, hier mit Bezug auf den IAM-Benutzer, der die Rolle annehmen darf, um die AWS-Ressourcen zu verwalten
     Version = "2012-10-17"
     Statement = [
       {

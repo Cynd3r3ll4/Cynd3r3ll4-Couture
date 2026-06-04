@@ -22,11 +22,11 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "website" { //Art 
 }
 
 resource "aws_s3_bucket_policy" "website_policy" { // Art der Bucket-Policy-Konfiguration: S3 Bucket Policy + interner Name: website_policy
-  bucket = aws_s3_bucket.website.id                // Verknüpfung mit meinem S3 Bucket über die ID des Buckets
+  bucket = aws_s3_bucket.website.id // Verknüpfung mit meinem S3 Bucket über die ID des Buckets
 
-  policy = jsonencode({    // JSON-kodierte Bucket-Policy, die den Zugriff von CloudFront auf den S3 Bucket erlaubt
+  policy = jsonencode({ // JSON-kodierte Bucket-Policy, die den Zugriff von CloudFront auf den S3 Bucket erlaubt
     Version = "2012-10-17" // Version der Policy-Syntax, hier die aktuelle Version
-    Statement = [          // Array von Anweisungen, hier nur eine Anweisung, die den Zugriff von CloudFront erlaubt
+    Statement = [ // Array von Anweisungen, hier nur eine Anweisung, die den Zugriff von CloudFront erlaubt
       {
         Sid = "AllowCloudFrontOAC" // Anweisungs-ID, hier mit Bezug zur Erlaubnis für CloudFront Origin Access Control
         Effect = "Allow" // Effekt der Anweisung, hier "Allow", um den Zugriff zu erlauben
