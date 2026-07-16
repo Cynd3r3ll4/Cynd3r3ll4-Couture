@@ -34,7 +34,7 @@ resource "aws_iam_role" "github_role" { // Erstellen einer IAM-Rolle für GitHub
         Action = "sts:AssumeRoleWithWebIdentity" // Aktion, die erlaubt, die Rolle mit Web Identity anzunehmen, hier notwendig für die Integration mit GitHub Actions
         Condition = {
           StringLike = {
-            "token.actions.githubusercontent.com:sub" = "repo:${var.github_repo}:*" // Bedingung, die sicherstellt, dass nur GitHub Actions aus dem Repository "Cynd3r3ll4/Cloud-Programming-Code" die Rolle annehmen können, um die Sicherheit zu gewährleisten
+            "token.actions.githubusercontent.com:sub" = "repo:${var.github_repo}:*" // Bedingung, die sicherstellt, dass nur GitHub Actions aus dem Repository "Cynd3r3ll4/Cynd3r3ll4-Couture" die Rolle annehmen können, um die Sicherheit zu gewährleisten
           }
           StringEquals = {
             "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com" // Bedingung, die sicherstellt, dass der Audience-Claim im OIDC-Token mit "sts.amazonaws.com" übereinstimmt, um die Sicherheit zu gewährleisten

@@ -192,5 +192,5 @@ variable "github_oidc_provider_arn" {
 variable "github_repo" {
     description = "GitHub Repository für OIDC (owner/repo)"
     type = string
-    default = "Cynd3r3ll4/Cynd3r3ll4-Couture"
+    default = "cynd3r3ll4/cynd3r3ll4-couture"
 }

@@ -11,7 +11,7 @@
 bucket_name = "mein-eigener-bucketname"
 
 // das eigene GitHub-Repo einfügen, wenn der Deploy darüber erfolgen soll (statt manuell Objeket in den Bucket zu ziehen, Format: "GitHubUser/RepositoryName")
-github_repo = "Cynd3r3ll4/Cynd3r3ll4-Couture"
+github_repo = "cynd3r3ll4/cynd3r3ll4-couture"
 
 // die eigene Admin-User-ARN einfügen
 terraform_admin_user_arn = "arn:aws:iam::<ACCOUNT-ID>:user/AdminUser"
