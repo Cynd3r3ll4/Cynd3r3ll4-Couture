@@ -11,22 +11,22 @@ permissions: # erlaubt GitHub Actions, auf AWS zuzugreifen, durch das Erzeugen e
 
 jobs: # Jobs, die ausgeführt werden sollen
   deploy:
+    permissions:
+      id-token: write
+      contents: read
     runs-on: ubuntu-latest
-
     steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLLE }}
+          aws-region: eu-central-1
+          audience: sts.amazonaws.com
+          role-session-name: github-actions-${{ github.run_id }}
       - name: Checkout code
         uses: actions/checkout@v4 # Checkt den Code aus dem Repository aus, damit er in den nächsten Schritten verwendet werden kann
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4 # Action, um AWS-Zugangsdaten zu konfigurieren, damit die AWS CLI in den nächsten Schritten verwendet werden kann
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLLE }} # Die IAM-Rolle, die die Action annehmen soll, um Zugriff auf AWS zu erhalten (in den Repository-Geheimnissen gespeichert)
-          aws-region: eu-central-1
-
       - name: Sync to S3
         run: | # synchronisiert Dateien aus dem lokalen Verzeichnis, überführt sie in den S3-Bucket und löscht Dateien im Bucket, die nicht mehr im lokalen Verzeichnis vorhanden sind
           aws s3 sync Webseite/ s3://cloud-programming-bucket-cynd3r3ll4 --delete 
-
       - name: Invalidate CloudFront cache
         run: | # erstellt eine Invalidation für die CloudFront-Distribution, um sicherzustellen, dass die neuesten Dateien aus dem S3-Bucket bereitgestellt werden, indem alle zwischengespeicherten Inhalte gelöscht werden
           aws cloudfront create-invalidation \
