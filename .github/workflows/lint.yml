@@ -21,11 +21,13 @@ jobs:                         # Sammlung von Jobs
         run: docker build -t mysite:ci ./Webseite   # Baut Container aus Webseite/
 
       - name: Install Node and linters
-        # Installiert Node.js und die benötigten Linter
+        # Installiert Node.js und die benötigten Linter (inklusive Stylelint, HTMLHint & Stylelint-Konfiguration)
         run: |
           sudo apt-get update -y
           sudo apt-get install -y nodejs npm
           sudo npm install -g htmlhint stylelint
+          sudo npm install -g stylelint-config-standard
+
 
       - name: Run htmlhint
         run: htmlhint ./Webseite                    # Prüft HTML-Dateien auf Syntaxfehler, fehlede oder unsaubere Strukturen, etc.
