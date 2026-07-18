@@ -1,0 +1,39 @@
+name: Lighthouse CI Audit        # Name des Workflows, erscheint in GitHub Actions
+
+on:                              # Wann der Workflow ausgeführt wird
+  push:                          # Bei jedem Push
+    branches:                    # aber nur auf bestimmten Branches
+      - development              # dein Entwicklungszweig
+      - main                     # optional: auch auf main
+  pull_request:                  # bei jedem Pull Request
+    branches:
+      - main                     # PRs gegen main sollen Lighthouse ausführen
+
+jobs:                            # Sammlung von Jobs
+  lighthouse:                    # Job-Name
+    runs-on: ubuntu-latest       # GitHub Actions Runner (Linux VM)
+
+    steps:                       # Schritte im Job
+      - name: Checkout code
+        uses: actions/checkout@v4   # Holt dein Repo in den Runner
+
+      - name: Install Node.js
+        run: |                      # Installiert Node.js und npm
+          sudo apt-get update -y
+          sudo apt-get install -y nodejs npm
+
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli   # Installiert Lighthouse CI global
+
+      - name: Run Lighthouse CI (Static Mode)
+        run: |                           # Führt Lighthouse im statischen Modus aus (Webseite-Ordner als Quelle, Report lokal speichern, Ordner für Report)
+          lhci autorun \
+            --collect.staticDistDir=./Webseite \
+            --upload.target=filesystem \
+            --upload.outputDir=./lhci-report
+
+      - name: Upload Lighthouse Report
+        uses: actions/upload-artifact@v4           # Macht den Report als Download verfügbar
+        with:
+          name: lighthouse-report                  # Name des Artefakts
+          path: ./lhci-report                      # Pfad zum Report-Ordner
