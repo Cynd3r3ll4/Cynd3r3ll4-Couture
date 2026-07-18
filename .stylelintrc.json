@@ -4,7 +4,6 @@
     "no-empty-source": null,
     "color-no-invalid-hex": true,
     "block-no-empty": true,
-    "declaration-block-no-duplicate-properties": true,
-    "string-quotes": "single"
+    "declaration-block-no-duplicate-properties": true
   }
 }
