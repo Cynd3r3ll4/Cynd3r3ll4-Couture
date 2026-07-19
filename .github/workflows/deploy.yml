@@ -19,7 +19,7 @@ jobs:
       - name: Configure AWS credentials  # Schrittname
         uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a  # konfiguriert AWS OIDC Role
         with:
-          role-to-assume: ${{ secrets.AWS_ROLLE }}  # ARN der GitHub-Rolle
+          role-to-assume: ${{ secrets.AWS_ROLLE_STAGING }}  # ARN der GitHub-Rolle aus Environment-Secret
           aws-region: eu-central-1  # AWS Region
 
       - name: Sync to S3 (staging)  # Schrittname
@@ -39,7 +39,7 @@ jobs:
       - name: Configure AWS credentials  # Schrittname
         uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a  # konfiguriert AWS OIDC Role
         with:
-          role-to-assume: ${{ secrets.AWS_ROLLE }}  # ARN der GitHub-Rolle
+          role-to-assume: ${{ secrets.AWS_ROLLE_PRODUCTION }}  # ARN der GitHub-Rolle aus Environment-Secret
           aws-region: eu-central-1  # AWS Region
 
       - name: Sync to S3 (production)  # Schrittname
