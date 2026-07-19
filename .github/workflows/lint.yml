@@ -18,7 +18,7 @@ jobs:                         # Sammlung von Jobs
         uses: actions/checkout@v4   # Holt dein Repo in den Runner
 
       - name: Build Docker image
-        run: docker build -t mysite:ci ./Webseite   # Baut Container aus Webseite/
+        run: docker build -t mysite:ci -f Webseite/Dockerfile .   # Baut Container aus Webseite/
 
       - name: Install Node and linters
         # Installiert Node.js und die benötigten Linter (inklusive Stylelint, HTMLHint & Stylelint-Konfiguration)
