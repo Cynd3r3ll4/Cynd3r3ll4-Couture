@@ -11,7 +11,7 @@ jobs: #Jobs, die ausgeführt werden sollen
 
     steps:
       - name: Checkout repository # holt den Code aus dem Repository, damit er in den nächsten Schritten verwendet werden kann
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           fetch-depth: 0 # holt gesamte Git-Historie, um die SonarQube-Analyse korrekt durchzuführen
 
@@ -22,14 +22,14 @@ jobs: #Jobs, die ausgeführt werden sollen
           java-version: '17' # stabile Version von Java, die für die SonarQube-Analyse verwendet wird
 
       - name: SonarQube Cloud Scan
-        uses: SonarSource/sonarqube-scan-action@v8.1.0
+        uses: SonarSource/sonarqube-scan-action@7006c4492b2e0ee0f816d36501671557c97f5995
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
             -Dsonar.projectKey=Cynd3r3ll4_Cynd3r3ll4-Couture
             -Dsonar.organization=cynd3r3ll4
-            -Dsonar.host.url=https://sonarqube.cloud.sonar.com
+            -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.sources=.
             -Dsonar.sourceEncoding=UTF-8
             -Dsonar.terraform.provider.aws.version=5.100.0
