@@ -23,8 +23,8 @@ jobs:
           aws-region: eu-central-1  # AWS Region
 
       - name: Sync to S3 (staging)  # Schrittname
-        run: |  # führt mehrere Shell-Zeilen aus, synchronisiert lokalen Ordner mit Staging-Bucket
-          aws s3 sync Webseite/ s3://cloud-programming-bucket-cynd3r3ll4-staging --delete
+        run: |  # führt mehrere Shell-Zeilen aus, synchronisiert lokalen Ordner mit dem bestehenden S3 Bucket
+          aws s3 sync Webseite/ s3://cloud-programming-bucket-cynd3r3ll4 --delete
 
     environment:
       name: staging  # weist diesen Job dem GitHub Environment 'staging' zu
