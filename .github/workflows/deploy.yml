@@ -1,34 +1,56 @@
-name: Deploy to AWS # Worflow Name
+name: Deploy to AWS  # Name des Workflows, sichtbar in GitHub Actions
 
-on: # Start des Triggers = push auf main branch
+on:
   push:
     branches:
-      - main
+      - main  # Workflow startet bei Push auf main
 
-permissions: # erlaubt GitHub Actions, auf AWS zuzugreifen, durch das Erzeugen eines temporären Tokens (keine Keys) und den Inhalt zu lesen
-  id-token: write
-  contents: read
+permissions:
+  id-token: write  # erlaubt OIDC Token für Cloud-Provider (keine statischen Keys)
+  contents: read   # erlaubt Checkout des Repository-Inhalts
 
-jobs: # Jobs, die ausgeführt werden sollen
-  deploy:
-    permissions:
-      id-token: write
-      contents: read
-    runs-on: ubuntu-latest
+jobs:
+  deploy-staging:  # Jobname: automatisches Deployment in die Staging-Umgebung
+    runs-on: ubuntu-latest  # Runner-Typ, auf dem der Job läuft
     steps:
-      - uses: actions/checkout@v4 # Checkt den Code aus dem Repository aus, damit er in den nächsten Schritten verwendet werden kann
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a
+      - name: Checkout code  # Schrittname
+        uses: actions/checkout@v4  # holt den Code aus dem Repo
+
+      - name: Configure AWS credentials  # Schrittname
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a  # konfiguriert AWS OIDC Role
         with:
-          role-to-assume: ${{ secrets.AWS_ROLLE }}
-          aws-region: eu-central-1
-          audience: sts.amazonaws.com
-          role-session-name: github-actions-${{ github.run_id }}
-      - name: Sync to S3
-        run: | # synchronisiert Dateien aus dem lokalen Verzeichnis, überführt sie in den S3-Bucket und löscht Dateien im Bucket, die nicht mehr im lokalen Verzeichnis vorhanden sind
-          aws s3 sync Webseite/ s3://cloud-programming-bucket-cynd3r3ll4 --delete 
-      - name: Invalidate CloudFront cache
-        run: | # erstellt eine Invalidation für die CloudFront-Distribution, um sicherzustellen, dass die neuesten Dateien aus dem S3-Bucket bereitgestellt werden, indem alle zwischengespeicherten Inhalte gelöscht werden
+          role-to-assume: ${{ secrets.AWS_ROLLE }}  # ARN der GitHub-Rolle
+          aws-region: eu-central-1  # AWS Region
+
+      - name: Sync to S3 (staging)  # Schrittname
+        run: |  # führt mehrere Shell-Zeilen aus, synchronisiert lokalen Ordner mit Staging-Bucket
+          aws s3 sync Webseite/ s3://cloud-programming-bucket-cynd3r3ll4-staging --delete
+
+    environment:
+      name: staging  # weist diesen Job dem GitHub Environment 'staging' zu
+
+  deploy-production:  # Jobname: Deployment in Production, erfordert Approval wenn Environment geschützt ist
+    needs: deploy-staging  # läuft erst, wenn deploy-staging erfolgreich war
+    runs-on: ubuntu-latest  # Runner-Typ
+    steps:
+      - name: Checkout code  # Schrittname
+        uses: actions/checkout@v4  # holt den Code aus dem Repo
+
+      - name: Configure AWS credentials  # Schrittname
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a  # konfiguriert AWS OIDC Role
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLLE }}  # ARN der GitHub-Rolle
+          aws-region: eu-central-1  # AWS Region
+
+      - name: Sync to S3 (production)  # Schrittname
+        run: |  # führt mehrere Shell-Zeilen aus, synchronisiert lokalen Ordner mit Production-Bucket
+          aws s3 sync Webseite/ s3://cloud-programming-bucket-cynd3r3ll4 --delete
+
+      - name: Invalidate CloudFront cache  # Schrittname
+        run: |  # führt mehrere Shell-Zeilen aus
           aws cloudfront create-invalidation \
             --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
-            --paths "/*"
+            --paths "/*"  # invalidiert CloudFront-Cache, damit neue Dateien ausgeliefert werden
+
+    environment:
+      name: production  # weist diesen Job dem GitHub Environment 'production' zu (führt Approval aus, wenn geschützt)
