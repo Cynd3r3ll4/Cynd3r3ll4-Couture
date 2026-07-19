@@ -1,0 +1,34 @@
+name: SonarQube Cloud Analysis # Workflow Name
+
+on: # Start des Triggers = push auf main branch und Pull Request
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs: #Jobs, die ausgeführt werden sollen
+  sonarqube:
+    runs-on: ubuntu-latest #Standard-Linux-Runner, auf dem die Jobs ausgeführt werden
+
+    steps:
+      - name: Checkout repository # holt den Code aus dem Repository, damit er in den nächsten Schritten verwendet werden kann
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # holt gesamte Git-Historie, um die SonarQube-Analyse korrekt durchzuführen
+
+      - name: Set up Java (required by Sonar scanner) # richtet die Java-Umgebung ein, die für den SonarQube-Scanner erforderlich ist
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin' # gibt die Java-Distribution an, die verwendet werden soll (Adoptium Temurin)
+          java-version: '17' # stabile Version von Java, die für die SonarQube-Analyse verwendet wird
+
+      - name: SonarQube Cloud Scan #führt Analyse durch, ruft Token aus dem Secret auf
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: | # führt CLI-Befehl aus, um den SonarQube-Scanner zu starten und die Analyseergebnisse an SonarQube Cloud zu senden
+          sonar-scanner \
+            -Dsonar.projectKey=Cynd3r3ll4_Cynd3r3ll4-Couture \
+            -Dsonar.organization=cynd3r3ll4 \
+            -Dsonar.host.url=https://sonarqube.cloud.sonar.com \
+            -Dsonar.sources=. \
+            -Dsonar.sourceEncoding=UTF-8 \
+            -Dsonar.terraform.provider.aws.version=5.100.0
