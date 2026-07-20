@@ -30,7 +30,12 @@ variable "s3_sse_algorithm" {
     default = "AES256"
 }
 
-
+// Variablen für s3.tf Staging
+variable "bucket_name_staging" {
+    description = "Name des S3 Staging-Buckets"
+    type = string
+    default = "cloud-programming-bucket-cynd3r3ll4-staging"
+}
 
 // Variablen für cloudfront.tf (und s3.tf)
 variable "cloudfront_default_root_object" {
@@ -190,7 +195,20 @@ variable "github_oidc_provider_arn" {
 }
 
 variable "github_repo" {
-    description = "GitHub Repository für OIDC (owner/repo)"
-    type = string
-    default = "cynd3r3ll4/cynd3r3ll4-couture"
+        description = "Liste der erlaubten OIDC 'sub' Patterns für GitHub (StringLike)\n    Beispiele: 'repo:owner@*/repo@*:environment:staging' oder 'repo:owner/repo:ref:refs/heads/*'"
+        type = list(string)
+        default = [
+            "repo:Cynd3r3ll4@*/Cynd3r3ll4-Couture@*:environment:staging",
+            "repo:Cynd3r3ll4@*/Cynd3r3ll4-Couture@*:environment:production",
+            "repo:Cynd3r3ll4@*/Cynd3r3ll4-Couture@*:ref:refs/heads/*",
+            "repo:Cynd3r3ll4/Cynd3r3ll4-Couture:environment:staging",
+            "repo:Cynd3r3ll4/Cynd3r3ll4-Couture:environment:production",
+            "repo:Cynd3r3ll4/Cynd3r3ll4-Couture:ref:refs/heads/*",
+            "repo:cynd3r3ll4@*/cynd3r3ll4-couture@*:environment:staging",
+            "repo:cynd3r3ll4@*/cynd3r3ll4-couture@*:environment:production",
+            "repo:cynd3r3ll4@*/cynd3r3ll4-couture@*:ref:refs/heads/*",
+            "repo:cynd3r3ll4/cynd3r3ll4-couture:environment:staging",
+            "repo:cynd3r3ll4/cynd3r3ll4-couture:environment:production",
+            "repo:cynd3r3ll4/cynd3r3ll4-couture:ref:refs/heads/*"
+        ]
 }

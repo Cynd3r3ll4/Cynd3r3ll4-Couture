@@ -34,10 +34,10 @@ resource "aws_iam_role" "github_role" { // Erstellen einer IAM-Rolle für GitHub
         Action = "sts:AssumeRoleWithWebIdentity" // Aktion, die erlaubt, die Rolle mit Web Identity anzunehmen, hier notwendig für die Integration mit GitHub Actions
         Condition = {
           StringLike = {
-            "token.actions.githubusercontent.com:sub" = "repo:${var.github_repo}:*" // Bedingung, die sicherstellt, dass nur GitHub Actions aus dem Repository "Cynd3r3ll4/Cynd3r3ll4-Couture" die Rolle annehmen können, um die Sicherheit zu gewährleisten
+            "token.actions.githubusercontent.com:sub" = var.github_repo
           }
           StringEquals = {
-            "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com" // Bedingung, die sicherstellt, dass der Audience-Claim im OIDC-Token mit "sts.amazonaws.com" übereinstimmt, um die Sicherheit zu gewährleisten
+            "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
           }
         }
       }
@@ -58,7 +58,9 @@ resource "aws_iam_policy" "github_cf_invalidation" { // Erstellen einer benutzer
         Action = [
           "cloudfront:CreateInvalidation" // Berechtigung zum Erstellen von Invalidierungen in der CloudFront Distribution, um sicherzustellen, dass die neuesten Inhalte nach der Bereitstellung in S3 sofort verfügbar sind
         ]
-        Resource = "arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_distribution.website.id}" // Nutzung von Variablen für die Account ID und die CloudFront Distribution ID, um die Berechtigungen auf die spezifische CloudFront Distribution zu beschränken, die von diesem Projekt verwendet wird, um die Sicherheit zu gewährleisten
+        Resource = ["arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_distribution.website.id}", // Nutzung von Variablen für die Account ID und die CloudFront Distribution ID, um die Berechtigungen auf die spezifische CloudFront Distribution zu beschränken, die von diesem Projekt verwendet wird, um die Sicherheit zu gewährleisten
+        "arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_distribution.staging.id}" // für den Staging-Bereich, um sicherzustellen, dass auch die Staging-Distribution invalidiert werden kann, wenn neue Inhalte bereitgestellt werden
+        ]
       }
     ]
   })
