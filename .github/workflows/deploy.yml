@@ -12,6 +12,7 @@ permissions:
 jobs:
   deploy-staging:  # Jobname: automatisches Deployment in die Staging-Umgebung
     runs-on: ubuntu-latest  # Runner-Typ, auf dem der Job läuft
+    environment: staging  # weist diesen Job dem GitHub Environment 'staging' zu
     steps:
       - name: Checkout code  # Schrittname
         uses: actions/checkout@v4  # holt den Code aus dem Repo
@@ -21,6 +22,8 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLLE_STAGING }}  # ARN der GitHub-Rolle aus Environment-Secret
           aws-region: eu-central-1  # AWS Region
+          audience: sts.amazonaws.com
+          role-session-name: github-actions-${{ github.run_id }}
 
       - name: Sync to S3 (staging)  # Schrittname
         run: |  # führt mehrere Shell-Zeilen aus, synchronisiert lokalen Ordner mit dem bestehenden S3 Bucket
@@ -32,12 +35,10 @@ jobs:
             --distribution-id ${{ secrets.STAGING_CLOUDFRONT_DISTRIBUTION_ID }} \
             --paths "/*"
 
-    environment:
-      name: staging  # weist diesen Job dem GitHub Environment 'staging' zu
-
   deploy-production:  # Jobname: Deployment in Production, erfordert Approval wenn Environment geschützt ist
     needs: deploy-staging  # läuft erst, wenn deploy-staging erfolgreich war
     runs-on: ubuntu-latest  # Runner-Typ
+    environment: production  # weist diesen Job dem GitHub Environment 'production' zu (führt Approval aus, wenn geschützt)
     steps:
       - name: Checkout code  # Schrittname
         uses: actions/checkout@v4  # holt den Code aus dem Repo
@@ -47,6 +48,8 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLLE_PRODUCTION }}  # ARN der GitHub-Rolle aus Environment-Secret
           aws-region: eu-central-1  # AWS Region
+          audience: sts.amazonaws.com
+          role-session-name: github-actions-${{ github.run_id }}
 
       - name: Sync to S3 (production)  # Schrittname
         run: |  # führt mehrere Shell-Zeilen aus, synchronisiert lokalen Ordner mit Production-Bucket
@@ -56,7 +59,4 @@ jobs:
         run: |  # führt mehrere Shell-Zeilen aus
           aws cloudfront create-invalidation \
             --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
-            --paths "/*"  # invalidiert CloudFront-Cache, damit neue Dateien ausgeliefert werden
-
-    environment:
-      name: production  # weist diesen Job dem GitHub Environment 'production' zu (führt Approval aus, wenn geschützt)
+            --paths "/*" 
