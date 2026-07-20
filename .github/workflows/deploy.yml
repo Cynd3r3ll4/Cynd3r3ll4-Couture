@@ -24,7 +24,13 @@ jobs:
 
       - name: Sync to S3 (staging)  # Schrittname
         run: |  # führt mehrere Shell-Zeilen aus, synchronisiert lokalen Ordner mit dem bestehenden S3 Bucket
-          aws s3 sync Webseite/ s3://cloud-programming-bucket-cynd3r3ll4 --delete
+          aws s3 sync Webseite/ s3://${{ vars.BUCKET_NAME_STAGING}} --delete
+
+      - name: Invalidate staging CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.STAGING_CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
 
     environment:
       name: staging  # weist diesen Job dem GitHub Environment 'staging' zu
@@ -44,7 +50,7 @@ jobs:
 
       - name: Sync to S3 (production)  # Schrittname
         run: |  # führt mehrere Shell-Zeilen aus, synchronisiert lokalen Ordner mit Production-Bucket
-          aws s3 sync Webseite/ s3://cloud-programming-bucket-cynd3r3ll4 --delete
+          aws s3 sync Webseite/ s3://${{ vars.BUCKET_NAME}} --delete
 
       - name: Invalidate CloudFront cache  # Schrittname
         run: |  # führt mehrere Shell-Zeilen aus

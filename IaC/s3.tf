@@ -44,3 +44,47 @@ resource "aws_s3_bucket_policy" "website_policy" { // Art der Bucket-Policy-Konf
     ]
   })
 }
+
+resource "aws_s3_bucket" "staging" { // Staging-Bucket, für Daten der Staging-Umgebung, bevor sie in der Produktionsumgebung landen
+  bucket = "${var.bucket_name}-staging" // Name des vorhandenen (Produktiv-)Bucket + "staging"
+}
+
+resource "aws_s3_bucket_public_access_block" "staging" {
+  bucket = aws_s3_bucket.staging.id
+  block_public_acls = true
+  block_public_policy = true
+  ignore_public_acls = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "staging" {
+  bucket = aws_s3_bucket.staging.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = var.s3_sse_algorithm
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "staging_policy" {
+  bucket = aws_s3_bucket.staging.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "AllowCloudFrontOACStaging"
+        Effect    = "Allow"
+        Principal = {
+          Service = "cloudfront.amazonaws.com"
+        }
+        Action    = "s3:GetObject"
+        Resource  = "${aws_s3_bucket.staging.arn}/*"
+        Condition = {
+          StringEquals = {
+            "AWS:SourceArn" = "arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_distribution.staging.id}"
+          }
+        }
+      }
+    ]
+  })
+}

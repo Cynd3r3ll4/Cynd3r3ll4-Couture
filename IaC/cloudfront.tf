@@ -47,3 +47,44 @@ resource "aws_cloudfront_origin_access_control" "website_oac" { //Art der OAC-Ko
     signing_behavior = "always"                  // Signierverhalten der Requests, hier immer signieren
     signing_protocol = "sigv4"                   // Signierprotokoll, hier AWS Signature Version 4
   }
+
+  resource "aws_cloudfront_distribution" "staging" { // Staging CloudFront-Distribution für sicheren Zugriff auf den Staging-Bucket
+  enabled = true
+  comment = "${var.cloudfront_comment} - Staging"
+  is_ipv6_enabled = true
+  http_version = var.cloudfront_http_version
+  default_root_object = var.cloudfront_default_root_object
+
+  origin {
+    domain_name = "${aws_s3_bucket.staging.bucket}.s3.${var.s3_region}.amazonaws.com"
+    origin_id = "s3_staging_origin"
+    origin_access_control_id  = aws_cloudfront_origin_access_control.website_oac.id
+    connection_attempts = 3
+    connection_timeout = 10
+  }
+
+  default_cache_behavior {
+    target_origin_id = "s3_staging_origin"
+    viewer_protocol_policy  = var.cloudfront_viewer_protocol_policy
+    allowed_methods = var.cloudfront_allowed_methods
+    cached_methods = var.cloudfront_cached_methods
+    cache_policy_id = var.cache_policy_id
+    compress = true
+  }
+
+  price_class = "PriceClass_100" // günstiger --> Tests müssen nicht weltweit verteilt werden!
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
+  viewer_certificate {
+    cloudfront_default_certificate = true
+  }
+
+  tags = {
+    Name = "${var.cloudfront_tag_name} Staging"
+  }
+}

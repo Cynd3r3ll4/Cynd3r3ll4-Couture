@@ -83,3 +83,14 @@ output "cloudwatch_dashboard_name" {
     description = "Name des CloudWatch Dashboards"
     value = aws_cloudwatch_dashboard.website_monitoring.dashboard_name
 }
+
+// Staging Bucket Outputs
+output "staging_website_url" {
+  description = "CloudFront-URL der Staging-Vorschau"
+  value       = aws_cloudfront_distribution.staging.domain_name
+}
+
+output "staging_cloudfront_distribution_id" {
+  description = "ID der Staging-CloudFront-Distribution (für Cache-Invalidierung nötig)"
+  value       = aws_cloudfront_distribution.staging.id
+}
