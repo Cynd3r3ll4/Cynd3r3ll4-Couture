@@ -83,7 +83,9 @@ resource "aws_iam_policy" "github_s3_deploy" { // Erstellen einer benutzerdefini
         ]
         Resource = [
           "${aws_s3_bucket.website.arn}",
-          "${aws_s3_bucket.website.arn}/*"
+          "${aws_s3_bucket.website.arn}/*",
+          "${aws_s3_bucket.staging.arn}",
+          "${aws_s3_bucket.staging.arn}/*"
         ]
       }
     ]
