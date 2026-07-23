@@ -6,7 +6,7 @@ FROM node:20-alpine AS lint
 WORKDIR /app
 
 # Stylelint-Konfiguration und Website-Dateien in den Build-Container kopieren
-COPY ./.stylelintrc.json ./Webseite/.stylelintrc.json
+COPY ./Webseite/.stylelintrc.json ./Webseite/.stylelintrc.json
 COPY ./Webseite ./Webseite
 
 # Linter installieren (inkl. Stylelint-Standardkonfiguration, die .stylelintrc.json referenziert)
