@@ -3,8 +3,8 @@ name: Lighthouse CI Audit        # Name des Workflows, erscheint in GitHub Actio
 on:                              # Wann der Workflow ausgeführt wird
   push:                          # Bei jedem Push
     branches:                    # aber nur auf bestimmten Branches
-      - development              # dein Entwicklungszweig
-      - main                     # optional: auch auf main
+      - development
+      - main
   pull_request:                  # bei jedem Pull Request
     branches:
       - main                     # PRs gegen main sollen Lighthouse ausführen
